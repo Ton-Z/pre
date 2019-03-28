@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Document</title>
+	<style>
+		.main {
+			position: relative;
+			width: 60%;
+			border: solid 1px cyan;
+			margin: 0 auto;
+			padding: 20px;
+		}
+
+		td,
+		th {
+			border: solid 1px;
+			padding: 5px 40px;
+		}
+
+		table {
+			border-collapse: collapse;
+			margin: 10px 0;
+		}
+
+		.zhe {
+			width: 40%;
+			border: solid 1px;
+			position: absolute;
+			top: 5%;
+			left: 50%;
+			transform: translate(-50%, -5%);
+			z-index: 2;
+			text-align: center;
+			padding: 20px;
+			background: #94c9f3;
+			display: none;
+		}
+
+		.zhe span {
+			padding: 5px 20px;
+			background: blue;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="main">
+		<!-- 顶部添加、排序部分 -->
+		<div class="top">
+			<input type="text" placeholder="姓名">
+			<input type="text" placeholder="年龄">
+			<input type="button" value="添加">
+			<input type="button" value="按年龄排序">
+			<div class="zhe">
+				<P>
+					数据不能为空
+				</P>
+				<span>确定</span>
+			</div>
+		</div>
+		<!-- 表格部分 -->
+		<div class="middle">
+			<table>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>姓名</th>
+						<th>年龄</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>1</td>
+						<td>1</td>
+						<td>1</td>
+						<td>删除</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<!-- 底部搜索，重置部分 -->
+		<div class="bottom">
+			<input type="text" placeholder="搜索">
+			<input type="button" value="搜索">
+			<input type="button" value="重置">
+			<input type="button" value="全部删除">
+		</div>
+	</div>
+</body>
+<script>
+	//获取元素
+	var nam = document.querySelectorAll("input")[0]//姓名
+	var age = document.querySelectorAll("input")[1]//年龄
+	var add = document.querySelectorAll("input")[2]//添加按钮
+	var sor = document.querySelectorAll("input")[3]//排序按钮
+	var zhe = document.querySelector(".zhe")//弹出框
+	var sur = zhe.querySelector("span")//关闭弹出框按钮
+	var tbody = document.querySelector("tbody")
+	var bottom = document.querySelector(".bottom")//搜索部分容器
+	var seaript = bottom.querySelectorAll("input")[0]//搜索输入框
+	var searbtn = bottom.querySelectorAll("input")[1]//搜索按钮
+	var rest = bottom.querySelectorAll("input")[2]//重置按钮
+	var delall = bottom.querySelectorAll("input")[3]//全部删除按钮
+	var arr = [];
+	//判断是否储存
+	if (localStorage.getItem("arr") != null) {
+		arr = JSON.parse(localStorage.getItem("arr"))
+	} else {
+		arr = []
+	}
+	//点击添加
+	var num = 0;//id
+	add.onclick = function () {
+		//判断内容是否为空
+		if (nam.value == "" || age.value == "") {
+			zhe.style.display = "block"
+		} else {
+			num++
+			var obj = {
+				name: nam.value,
+				age: age.value,
+				ID: num
+			}
+			arr.push(obj)
+			//本地储存
+			localStorage.setItem("arr", JSON.stringify(arr))
+			//渲染页面
+			showPage()
+			//清空输入框
+			nam.value = age.value = ""
+		}
+	}
+	//弹框确认
+	sur.onclick = function () {
+		zhe.style.display = "none"
+	}
+	//渲染
+	showPage()
+	function showPage() {
+		tbody.innerHTML = ""
+		for (var i = 0; i < arr.length; i++) {
+			var tr = document.createElement("tr")
+			tr.innerHTML = "<td>" + arr[i].ID + "</td><td>" + arr[i].name + "</td><td>" + arr[i].age + "</td><td><span onclick='del(this)' index='" + i + "'>删除</span>"
+			tbody.appendChild(tr)
+		}
+		//重置
+		rest.onclick = function () {
+			var trs = tbody.querySelectorAll("tr");
+			seaript.value = "";
+			for (var i = 0; i < trs.length; i++) {
+				trs[i].style.background = "#FFF"
+			}
+		}
+	}
+	//删除
+	function del(n) {
+		//数组删除
+		arr.splice(n.getAttribute("index"), 1)
+		//删除后储存
+		localStorage.setItem("arr", JSON.stringify(arr))
+		//重新渲染页面
+		showPage()
+	}
+	//高亮显示
+	hua()
+	function hua() {
+		var trs = tbody.querySelectorAll("tr");
+		for (var i = 0; i < trs.length; i++) {
+			trs[i].onmouseover = function () {
+				this.style.background = "red";
+			}
+			trs[i].onmouseout = function () {
+				this.style.background = "#FFF";
+			}
+		}
+	}
+	//搜索
+	searbtn.onclick = function () {
+		var trss = tbody.rows
+		for (var i = 0; i < trss.length; i++) {
+			if (trss[i].cells[1].innerHTML.indexOf(seaript.value) !== -1) {
+				trss[i].style.background = "red"
+			}
+		}
+	}
+	//全部删除
+	delall.onclick = function () {
+		// 数组清空
+		arr = []
+		// 清空后储存
+		localStorage.setItem("arr", JSON.stringify(arr))
+		// 重新渲染
+		showPage()
+	}
+	//附加题
+	var flag = -1;
+	sor.onclick = function () {
+		if (flag == -1) {
+			this.value = "按照ID排序"
+			arr.sort(function (a, b) {
+				return a.age - b.age
+			})
+		} else {
+			this.value = "按照年龄排序"
+			arr.sort(function (a, b) {
+				return a.ID - b.ID
+			})
+		}
+		localStorage.setItem("arr", JSON.stringify(arr));
+		showPage()
+		flag *= -1
+	}
+</script>
+
+</html>
